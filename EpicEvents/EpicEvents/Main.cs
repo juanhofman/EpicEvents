@@ -13,16 +13,30 @@ namespace EpicEvents
 {
     public class Main : Plugin
     {
+        public static EventController EventController;
+
         public override void Initialize()
         {
-            
+            EventController = new EventController();
+            Functions.PlayerWentOnDutyFinishedSelection += StartEvents;
         }
 
         public override void Finally()
         {
-            
+            if(EventController != null)
+            {
+                StopEvents();
+            }
         }
 
+        private void StartEvents()
+        {
+            EventController.StartEvents();
+        }
 
+        private void StopEvents()
+        {
+            EventController.StopEvents();
+        }
     }
 }
