@@ -14,24 +14,41 @@ namespace EpicEvents
     public class Main : Plugin
     {
         public static EventController EventController;
+        public static ResourceManager ResourceManager;
+        public static Random Random;
 
         public override void Initialize()
         {
+            Game.LogTrivial("[EE] Initializing.");
+
             EventController = new EventController();
-            Functions.PlayerWentOnDutyFinishedSelection += StartEvents;
+            ResourceManager = new ResourceManager();
+            Random = new Random();
+
+            Functions.OnOnDutyStateChanged += StartEvents;
+
+            Game.LogTrivial("[EE] Initialized.");
         }
 
         public override void Finally()
         {
-            if(EventController != null)
+            if (EventController != null)
             {
+                Game.LogTrivial("[EE] Stopping.");
+                ResourceManager.RemoveAll();
                 StopEvents();
+                Game.LogTrivial("[EE] Stopped.");
             }
         }
 
-        private void StartEvents()
+        private void StartEvents(bool state)
         {
-            EventController.StartEvents();
+            if (state)
+            {
+                Game.LogTrivial("[EE] Starting events.");
+                EventController.StartEvents();
+                Game.LogTrivial("[EE] Started events.");
+            }
         }
 
         private void StopEvents()
