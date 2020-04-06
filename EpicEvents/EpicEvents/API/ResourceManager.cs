@@ -119,6 +119,7 @@ namespace EpicEvents
         public Vehicle CreateVehicle()
         {
             Vehicle v = new Vehicle();
+            v.IsPersistent = true;
             m_Vehicles.Add(v);
             return v;
         }
@@ -126,6 +127,7 @@ namespace EpicEvents
         public Vehicle CreateVehicle(Vector3 posistion)
         {
             Vehicle v = new Vehicle(posistion);
+            v.IsPersistent = true;
             m_Vehicles.Add(v);
             return v;
         }
@@ -133,6 +135,7 @@ namespace EpicEvents
         public Vehicle CreateVehicle(Predicate<Model> model)
         {
             Vehicle v = new Vehicle(model);
+            v.IsPersistent = true;
             m_Vehicles.Add(v);
             return v;
         }
@@ -140,6 +143,7 @@ namespace EpicEvents
         public Vehicle CreateVehicle(Model model, Vector3 posistion)
         {
             Vehicle v = new Vehicle(model, posistion);
+            v.IsPersistent = true;
             m_Vehicles.Add(v);
             return v;
         }
@@ -147,6 +151,7 @@ namespace EpicEvents
         public Vehicle CreateVehicle(Vector3 position, float heading)
         {
             Vehicle v = new Vehicle(position, heading);
+            v.IsPersistent = true;
             m_Vehicles.Add(v);
             return v;
         }
@@ -154,6 +159,7 @@ namespace EpicEvents
         public Vehicle CreateVehicle(Predicate<Model> model, Vector3 position)
         {
             Vehicle v = new Vehicle(model, position);
+            v.IsPersistent = true;
             m_Vehicles.Add(v);
             return v;
         }
@@ -161,6 +167,7 @@ namespace EpicEvents
         public Vehicle CreateVehicle(Model model, Vector3 posistion, float heading)
         {
             Vehicle v = new Vehicle(model, posistion, heading);
+            v.IsPersistent = true;
             m_Vehicles.Add(v);
             return v;
         }
@@ -168,6 +175,7 @@ namespace EpicEvents
         public Vehicle CreateVehicle(Predicate<Model> model, Vector3 position, float heading)
         {
             Vehicle v = new Vehicle(model, position, heading);
+            v.IsPersistent = true;
             m_Vehicles.Add(v);
             return v;
         }

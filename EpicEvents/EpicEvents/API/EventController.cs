@@ -68,7 +68,7 @@ namespace EpicEvents
                         }
                         else
                         {
-                            m_ActiveEvent = new Events.DrugDealer();
+                            m_ActiveEvent = new Events.HomlessDisturbance();
                             m_ActiveEvent.Start();
                             m_IsEventActive = true;
                         }
