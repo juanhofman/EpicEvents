@@ -38,7 +38,7 @@ namespace EpicEvents.Events
 
             foreach (Vehicle v in World.GetAllVehicles())
             {
-                if (v.DistanceTo(m_DrugDealerLocations[0].Car.Vector3) < 10 && v.Exists() && v != Game.LocalPlayer.LastVehicle)
+                if (v.DistanceTo(m_DrugDealerLocations[m_CurrentLocations].Car.Vector3) < 10 && v.Exists() && v != Game.LocalPlayer.LastVehicle)
                 {
                     v.Delete();
                 }
@@ -46,7 +46,7 @@ namespace EpicEvents.Events
 
             foreach (Ped p in World.GetAllPeds())
             {
-                if (p.DistanceTo(m_DrugDealerLocations[0].Car.Vector3) < 10 && p.Exists())
+                if (p.DistanceTo(m_DrugDealerLocations[m_CurrentLocations].Car.Vector3) < 10 && p.Exists())
                 {
                     p.Delete();
                 }
@@ -56,10 +56,10 @@ namespace EpicEvents.Events
 
             m_Peds = new Ped[]
             {
-                ResourceManager.CreatePed(m_DrugDealerLocations[0].Criminal1.Vector3,m_DrugDealerLocations[0].Criminal1.Heading),
-                ResourceManager.CreatePed(m_DrugDealerLocations[0].Criminal2.Vector3,m_DrugDealerLocations[0].Criminal2.Heading),
-                ResourceManager.CreatePed(m_DrugDealerLocations[0].Buyer1.Vector3,m_DrugDealerLocations[0].Buyer1.Heading),
-                ResourceManager.CreatePed(m_DrugDealerLocations[0].Buyer2.Vector3,m_DrugDealerLocations[0].Buyer2.Heading)
+                ResourceManager.CreatePed(m_DrugDealerLocations[m_CurrentLocations].Criminal1.Vector3,m_DrugDealerLocations[m_CurrentLocations].Criminal1.Heading),
+                ResourceManager.CreatePed(m_DrugDealerLocations[m_CurrentLocations].Criminal2.Vector3,m_DrugDealerLocations[m_CurrentLocations].Criminal2.Heading),
+                ResourceManager.CreatePed(m_DrugDealerLocations[m_CurrentLocations].Buyer1.Vector3,m_DrugDealerLocations[m_CurrentLocations].Buyer1.Heading),
+                ResourceManager.CreatePed(m_DrugDealerLocations[m_CurrentLocations].Buyer2.Vector3,m_DrugDealerLocations[m_CurrentLocations].Buyer2.Heading)
             };
 
             foreach (Ped p in m_Peds)
@@ -80,7 +80,7 @@ namespace EpicEvents.Events
 
             Log("Spawning vehicles");
 
-            m_Vehicle = ResourceManager.CreateVehicle("Faction3", m_DrugDealerLocations[0].Car.Vector3, m_DrugDealerLocations[0].Car.Heading);
+            m_Vehicle = ResourceManager.CreateVehicle("Faction3", m_DrugDealerLocations[m_CurrentLocations].Car.Vector3, m_DrugDealerLocations[m_CurrentLocations].Car.Heading);
 
             Log("Setting up vehicles");
 
@@ -95,9 +95,8 @@ namespace EpicEvents.Events
 
             Log("Setting behaviour path");
 
-            //m_BehavPath = Random.Next(0, 3);//0,1,2
-            m_BehavPath = 2;
-
+            m_BehavPath = Random.Next(0, 3);
+  
             Log("Setting behaviour specific");
 
 
@@ -120,8 +119,9 @@ namespace EpicEvents.Events
 
                 default://Run on too close
 
-                    if (!m_InPursuit && Game.LocalPlayer.Character.DistanceTo(m_DrugDealerLocations[0].Criminal2.Vector3) < distance)
+                    if (!m_InPursuit && Game.LocalPlayer.Character.DistanceTo(m_DrugDealerLocations[m_CurrentLocations].Criminal2.Vector3) < distance)
                     {
+                        m_InPursuit = true;
                         m_Pursuit = Functions.CreatePursuit();
 
                         foreach (Ped p in m_Peds)
@@ -134,21 +134,12 @@ namespace EpicEvents.Events
                         Functions.SetPursuitCopsCanJoin(m_Pursuit, true);
                         Functions.SetPursuitTacticsEnabled(m_Pursuit, true);
                         Functions.SetPursuitIsActiveForPlayer(m_Pursuit, true);
-
-                        Functions.PlayScannerAudioUsingPosition("OFFICERS_REPORT CRIME_RESIST_ARREST IN_OR_ON_POSITION", Game.LocalPlayer.Character.Position);
-                        Game.DisplayNotification("3dtextures", "mpgroundlogo_cops", "Dispatch", "", "Show me in purstuit of 4 individuals, possibly armed.");
-                        Functions.PlayScannerAudioUsingPosition("ASSISTANCE_REQUIRED IN_OR_ON_POSITION", Game.LocalPlayer.Character.Position);
-                        Game.DisplayNotification("3dtextures", "mpgroundlogo_cops", "Dispatch", "", "Copy that, sending backup!");
-
-                        Wrapper.CallBackup(Wrapper.BackupType.pursuit);
-
-                        m_InPursuit = true;
                     }
 
                     break;
                 case 1://Run and shoot
 
-                    if (!m_InPursuit && Game.LocalPlayer.Character.DistanceTo(m_DrugDealerLocations[0].Criminal2.Vector3) < distance)
+                    if (!m_InPursuit && Game.LocalPlayer.Character.DistanceTo(m_DrugDealerLocations[m_CurrentLocations].Criminal2.Vector3) < distance)
                     {
                         m_Pursuit = Functions.CreatePursuit();
 

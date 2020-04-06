@@ -17,12 +17,12 @@ namespace EpicEvents.Events
         {
             new HomlessDisturbanceLocations(
                 new EVector3(new Vector3(-787.0f,-198.8f,37.0f), 115.2f),
-                new EVector3(new Vector3(-790.8f,-190.6f,37.2f),79.5f),
+                new EVector3(new Vector3(-790.8f,-190.6f,37.2f),110.4f),
                 new List<EVector3>()
                 {
                     new EVector3(new Vector3(-797.2f, -197.0f, 37.3f), 19.1f),
                     new EVector3(new Vector3(-793.7f, -199.4f, 37.2f), -21.2f),
-                    new EVector3(new Vector3(-786.1f, -198.3f, 38.8f), -67.1f),
+                    new EVector3(new Vector3(-786.1f, -198.3f, 37.8f), -67.1f),
                     new EVector3(new Vector3(-789.1f, -192.7f, 37.3f), 125.3f),
                     new EVector3(new Vector3(-790.0f, -194.0f, 37.3f), 45.5f)
                 },
@@ -51,6 +51,10 @@ namespace EpicEvents.Events
         Vehicle m_Vehicle1;
         Vehicle m_Vehicle2;
 
+        private bool m_InPursuit = false;
+        private LHandle m_Pursuit;
+        int m_Distance = 30;
+
         public override void Start()
         {
             base.Start();
@@ -71,7 +75,8 @@ namespace EpicEvents.Events
             {
                 if (p.DistanceTo(m_Locations[m_Location].Car1.Vector3) < 10 && p.Exists())
                 {
-                    p.Delete();
+                    if (p != Game.LocalPlayer.Character)
+                        p.Delete();
                 }
             }
 
@@ -81,16 +86,15 @@ namespace EpicEvents.Events
 
             for (int i = 0; i < m_Locations[m_Location].Bums.Count; i++)
             {
-                m_Peds[i] = ResourceManager.CreatePed(m_Locations[m_Location].Bums[i].Vector3, m_Locations[m_Location].Bums[i].Heading);
+                m_Peds[i] = ResourceManager.CreatePed(Models.GetRandomHomless(), m_Locations[m_Location].Bums[i].Vector3, m_Locations[m_Location].Bums[i].Heading);
             }
 
-            foreach (Ped p in m_Peds)
-            {
-                AnimationType anim;
-                anim = Animation.GetRandomIdleAnimation();
-
-                p.Tasks.PlayAnimation(anim.Dictionary, anim.Animation, 1, AnimationFlags.Loop);
-            }
+            m_Peds[0].Tasks.PlayAnimation("amb@world_human_bum_slumped@male@laying_on_left_side@base", "base", 1, AnimationFlags.Loop);
+            m_Peds[1].Tasks.PlayAnimation("switch@trevor@scares_tramp", "trev_scares_tramp_idle_tramp", 1, AnimationFlags.Loop);
+            m_Peds[2].Tasks.PlayAnimation("savecouch@", "t_sleep_loop_couch", 1, AnimationFlags.Loop);
+            m_Peds[2].IsPositionFrozen = true;
+            m_Peds[3].Tasks.PlayAnimation("amb@world_human_bum_standing@depressed@base", "base", 1, AnimationFlags.Loop);
+            m_Peds[4].Tasks.PlayAnimation("amb@medic@standing@kneel@idle_a", "idle_a", 1, AnimationFlags.Loop);
 
             Log("Setting ped items and personas");
 
@@ -121,7 +125,7 @@ namespace EpicEvents.Events
             Log("Setting behaviour path");
 
             //m_BehavPath = Random.Next(0, 3);//0,1,2
-            m_BehavPath = 0;
+            m_BehavPath = Random.Next(0,3);
 
             Log("Setting behaviour specific");
 
@@ -129,16 +133,71 @@ namespace EpicEvents.Events
             Log("Done setting up");
         }
 
+
         public override void Update()
         {
             base.Update();
 
-            m_Vehicle1.AlarmTimeLeft = TimeSpan.FromHours(1);
+            m_Vehicle1.AlarmTimeLeft = TimeSpan.FromHours(1) + TimeSpan.FromSeconds(0.5f);
             m_Vehicle2.AlarmTimeLeft = TimeSpan.FromHours(1);
+
+            if (Game.LocalPlayer.LastVehicle.Exists())
+                m_Distance = Game.LocalPlayer.LastVehicle.IsSirenOn ? 30 : 20;
 
             switch (m_BehavPath)
             {
-                 default:
+                default://Run
+
+                    if (!m_InPursuit && Game.LocalPlayer.Character.DistanceTo(m_Locations[m_Location].Car1.Vector3) < m_Distance)
+                    {
+                        m_InPursuit = true;
+                        m_Pursuit = Functions.CreatePursuit();
+                        m_Peds[2].IsPositionFrozen = false;
+
+                        foreach (Ped p in m_Peds)
+                        {
+                            Functions.AddPedToPursuit(m_Pursuit, p);
+                            PedPursuitAttributes attri = Functions.GetPedPursuitAttributes(p);
+                            attri.HandlingAbility = (float)Random.NextDouble() + 0.5f;
+                            attri.CanUseCars = false;
+                        }
+
+                        Functions.SetPursuitCopsCanJoin(m_Pursuit, true);
+                        Functions.SetPursuitTacticsEnabled(m_Pursuit, true);
+                        Functions.SetPursuitIsActiveForPlayer(m_Pursuit, true);
+                    }
+
+                    break;
+
+                case 1://Stay
+
+
+
+                    break;
+
+                case 2://Some will run
+
+                    if (!m_InPursuit && Game.LocalPlayer.Character.DistanceTo(m_Locations[m_Location].Car1.Vector3) < m_Distance)
+                    {
+                        m_InPursuit = true;
+                        m_Pursuit = Functions.CreatePursuit();
+
+                        foreach (Ped p in m_Peds)
+                        {
+                            if(Random.Next(0,4) == 2)
+                            {
+                                Functions.AddPedToPursuit(m_Pursuit, p);
+                                PedPursuitAttributes attri = Functions.GetPedPursuitAttributes(p);
+                                attri.HandlingAbility = (float)Random.NextDouble() + 0.5f;
+                                attri.CanUseCars = false;
+                            }
+                        }
+
+                        Functions.SetPursuitCopsCanJoin(m_Pursuit, true);
+                        Functions.SetPursuitTacticsEnabled(m_Pursuit, true);
+                        Functions.SetPursuitIsActiveForPlayer(m_Pursuit, true);
+                    }
+
                     break;
             }
         }
@@ -147,7 +206,7 @@ namespace EpicEvents.Events
         {
             base.End();
 
-            foreach(Ped p in m_Peds)
+            foreach (Ped p in m_Peds)
             {
                 ResourceManager.RemovePed(p);
             }
