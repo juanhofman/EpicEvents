@@ -37,7 +37,8 @@ namespace EpicEvents.Events
             Log("Location id: " + m_Location);
 
             Log("Adding small blip");
-            m_Blip = ResourceManager.CreatBlip(Location.HomlessLocations[m_Location][0].Posistion, 0.5f);
+            m_Blip = ResourceManager.CreatBlip(Location.HomlessLocations[m_Location][0].Posistion, 20f);
+            m_Blip.Color = System.Drawing.Color.Yellow;
 
             Log("Clearing area of peds and cars");
 
