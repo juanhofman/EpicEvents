@@ -23,8 +23,9 @@ namespace MenyooConverter
 
         public string Frozen;
         public string Model;
+        public string Type;
 
-        public Data(string x, string y, string z, string pitch, string roll, string yaw, string animDict, string animName, string frozen, string model)
+        public Data(string x, string y, string z, string pitch, string roll, string yaw, string animDict, string animName, string frozen, string model, string type)
         {
             this.x = x;
             this.y = y;
@@ -36,6 +37,7 @@ namespace MenyooConverter
             AnimName = animName;
             Frozen = frozen;
             Model = model;
+            Type = type;
         }
     }
 
@@ -53,6 +55,8 @@ namespace MenyooConverter
                 {
                     case "setfile":
 
+                        setfile:
+
                         using (OpenFileDialog openFileDialog = new OpenFileDialog())
                         {
                             openFileDialog.InitialDirectory = @"D:\SteamLibrary\steamapps\common\Grand Theft Auto V\menyooStuff\Spooner";
@@ -68,11 +72,13 @@ namespace MenyooConverter
 
                             Console.Clear();
                             Console.WriteLine("File selected was " + File);
+                            Console.ReadLine();
+                            goto genfile;
                         }
 
-                        break;
-
                     case "genfile":
+
+                        genfile:
 
                         List<Data> m_data = new List<Data>();
 
@@ -94,6 +100,7 @@ namespace MenyooConverter
                         string AnimName = "";
                         string Frozen = "";
                         string Model = "";
+                        string Type = "";
 
                         using (XmlReader reader = XmlReader.Create(File))
                         {
@@ -133,11 +140,14 @@ namespace MenyooConverter
                                         case "AnimName":
                                             AnimName = reader.ReadInnerXml();
                                             break;
+                                        case "Type":
+                                            Type = reader.ReadInnerXml();
+                                            break;
                                     }
                                 }
                                 else if (reader.Name == "Placement" && !reader.IsStartElement())
                                 {
-                                    m_data.Add(new Data(x, y, z, Pitch, Roll, Yaw, AnimDict, AnimName, Frozen, Model));
+                                    m_data.Add(new Data(x, y, z, Pitch, Roll, Yaw, AnimDict, AnimName, Frozen, Model, Type));
 
                                     x = "";
                                     y = "";
@@ -151,43 +161,42 @@ namespace MenyooConverter
                                     AnimName = "";
                                     Frozen = "";
                                     Model = "";
+                                    Type = "";
                                 }
                             }
                         }
 
                         Console.WriteLine("Found " + m_data.Count + " items.\n");
 
-                        Console.WriteLine("Please enter an format type: ");
-                        switch (Console.ReadLine())
+                        string s = "";
+                        string space = "                ";
+
+                        foreach (Data d in m_data)
                         {
-                            default://new LocationItem(0,0,0,0,0,0,"", "", false, 0x6546)
+                            s += "new LocationItem(";
+                            s += d.x + ", ";
+                            s += d.y + ", ";
+                            s += d.z + ", ";
 
-                                string s = "";
-                                foreach (Data d in m_data)
-                                {
-                                    s += "new LocationItem(";
-                                    s += d.x + ", ";
-                                    s += d.y + ", ";
-                                    s += d.z + ", ";
+                            s += d.Roll + ", ";
+                            s += d.Pitch + ", ";
+                            s += d.Yaw + ", ";
 
-                                    s += d.Roll + ", ";
-                                    s += d.Pitch + ", ";
-                                    s += d.Yaw + ", ";
+                            s += '"' + d.AnimDict + '"' + ", ";
+                            s += '"' + d.AnimName + '"' + ", ";
 
-                                    s += '"' + d.AnimDict + '"' + ", ";
-                                    s += '"' + d.AnimName + '"' + ", ";
-
-                                    s += d.Frozen + ", ";
-                                    s += d.Model + "),\n";
-                                }
-
-                                Console.WriteLine(s);
-                                Clipboard.SetText(s);
-
-                                break;
+                            s += d.Frozen + ", ";
+                            s += d.Model + ", ";
+                            s += "(ObjectType)" + d.Type + "),\n" + space;
                         }
 
-                        break;
+                        s = s.Remove(s.Length - (2 + space.Length));
+
+                        Clipboard.SetText(s);
+
+                        Console.WriteLine("Done, enter for new setfile");
+                        Console.ReadLine();
+                        goto setfile;
 
                     case "exit":
                         m_Loop = false;

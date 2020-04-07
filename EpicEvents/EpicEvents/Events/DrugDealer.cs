@@ -28,11 +28,11 @@ namespace EpicEvents.Events
         private bool m_InPursuit = false;
         private LHandle m_Pursuit;
 
-        public override void Start()
+        public override bool Start()
         {
-            base.Start();
-
             Log("Starting");
+
+
 
             Log("Clearing area of peds and cars");
 
@@ -101,6 +101,7 @@ namespace EpicEvents.Events
 
 
             Log("Done setting up");
+            return true;
         }
 
         public override void Update()

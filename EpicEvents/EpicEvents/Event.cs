@@ -22,8 +22,9 @@ namespace EpicEvents
             EventController.RegisterEvent(this);
         }
 
-        public virtual void Start()
+        public virtual bool Start()
         {
+            return false;
         }
         public virtual void Update()
         {
