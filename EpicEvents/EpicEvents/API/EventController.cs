@@ -11,13 +11,14 @@ namespace EpicEvents
 {
     public class EventController
     {
-        private List<Event> m_Events;
+        public Random Random = Main.Random;
+        private List<Type> m_Events;
         private bool m_Looping = false;
 
         public EventController()
         {
             Game.LogTrivial("[EE] EventController Initializing.");
-            m_Events = new List<Event>();
+            m_Events = new List<Type>();
             Game.LogTrivial("[EE] EventController Initialized.");
         }
 
@@ -33,57 +34,92 @@ namespace EpicEvents
         {
             if (hard)
             {
-
+                if (m_ActiveEvent != null)
+                {
+                    m_ActiveEvent.End();
+                    m_ActiveEvent = null;
+                }
             }
             else
             {
-
+                m_Generating = false;
             }
         }
 
-        public void RegisterEvent(Event eventtype)
+        public void EndOfEvent()
+        {
+            m_ActiveEvent = null;
+        }
+
+        public void RegisterEvent(Type eventtype)
         {
             m_Events.Add(eventtype);
         }
 
-        private bool m_IsEventActive = false;
+        private bool m_Generating = false;
         private Event m_ActiveEvent = null;
 
+        private int m_MinTimeBetween = 100;
+        private int m_MaxTimeBetween = 500;
+        
+        private float m_TimeBetween = 0;
+        private float m_TimeBetweenTimer = 0;
 
         private void EventLoop()
         {
-            Game.LogTrivial("[EE] EvenController Starting loop.");
             m_Looping = true;
+            m_Generating = true;
+
             GameFiber.StartNew(delegate
             {
                 Game.LogTrivial("[EE] EvenController Starting thread #2.");
                 while (m_Looping)
                 {
-                    if (Game.IsKeyDown(Keys.F5))
+                    if (m_ActiveEvent == null)
                     {
-                        if (m_IsEventActive)
+                        if (!m_Generating)
                         {
-                            m_ActiveEvent.End();
-                            m_IsEventActive = false;
+                            m_Looping = false;
+                            Game.LogTrivial("[EE] EvenController stopping thread #2");
+                            GameFiber.Hibernate();
                         }
                         else
                         {
-                            m_ActiveEvent = new Events.HomlessDisturbance();
-                            m_ActiveEvent.Start();
-                            m_IsEventActive = true;
+                            //generate new events.
+                            if(m_TimeBetween == 0)
+                            {
+                                m_TimeBetween = Random.Next(m_MinTimeBetween, m_MaxTimeBetween);
+                            }
+
+                            if(m_TimeBetweenTimer >= m_TimeBetween)//gen event
+                            {
+                                Type type = m_Events[Random.Next(0,m_Events.Count)];
+                                Event e = (Event)Activator.CreateInstance(type);
+
+                                bool ev = e.Start();
+                                if (ev)
+                                {
+                                    m_ActiveEvent = e;
+                                }
+
+                                m_TimeBetweenTimer = 0;
+                            }
+                            else
+                            {
+                                m_TimeBetweenTimer += Game.FrameTime;
+                            }
+
                         }
                     }
-
-                    if(Game.IsKeyDown(Keys.F6) && m_IsEventActive)
-                    {
-                        m_ActiveEvent.End();
-                        m_IsEventActive = false;
-                    }
-
-                    if (m_IsEventActive)
+                    else
                     {
                         m_ActiveEvent.Update();
-                        GameFiber.Yield();
+
+                        if (Game.IsKeyDownRightNow(Keys.End))
+                        {
+                            m_ActiveEvent.End();
+                            m_ActiveEvent = null;
+                        }
                     }
 
                     GameFiber.Yield();

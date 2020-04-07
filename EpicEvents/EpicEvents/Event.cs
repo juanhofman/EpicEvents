@@ -17,11 +17,6 @@ namespace EpicEvents
         protected ResourceManager ResourceManager = Main.ResourceManager;
         protected Random Random = Main.Random;
 
-        public Event()
-        {
-            EventController.RegisterEvent(this);
-        }
-
         public virtual bool Start()
         {
             return false;
@@ -31,6 +26,7 @@ namespace EpicEvents
         }
         public virtual void End()
         {
+            EventController.EndOfEvent();
         }
 
         protected void Log(string s)

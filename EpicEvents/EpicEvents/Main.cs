@@ -21,9 +21,12 @@ namespace EpicEvents
         {
             Game.LogTrivial("[EE] Initializing.");
 
+            Random = new Random();
             EventController = new EventController();
             ResourceManager = new ResourceManager();
-            Random = new Random();
+
+            EventController.RegisterEvent(typeof(Events.DrugDealer));
+            EventController.RegisterEvent(typeof(Events.HomlessDisturbance));
 
             Functions.OnOnDutyStateChanged += StartEvents;
 

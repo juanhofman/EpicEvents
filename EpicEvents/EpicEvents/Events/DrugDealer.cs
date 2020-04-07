@@ -13,17 +13,12 @@ namespace EpicEvents.Events
 {
     public class DrugDealer : Event
     {
-        private DrugDealerLocation[] m_DrugDealerLocations = new DrugDealerLocation[]
-        {
-            new DrugDealerLocation(new EVector3(91,-1249,29,270), new EVector3(93,-1248,29.3f,136), new EVector3(82,-1257,29.3f,82),new EVector3(92,-1251,29.3f,35),
-                new EVector3(95,-1250,29.3f,75))
-        };
-
-        private int m_CurrentLocations = 0;
+        private int m_Location = 0;
         private int m_BehavPath = 0;
 
         private Ped[] m_Peds;
-        private Vehicle m_Vehicle;
+        private Vehicle[] m_Vehicles;
+        private Blip m_Blip;
 
         private bool m_InPursuit = false;
         private LHandle m_Pursuit;
@@ -32,13 +27,23 @@ namespace EpicEvents.Events
         {
             Log("Starting");
 
+            m_Location = Location.GetClosestLocationInArray(Location.DrugDealerLocation, Game.LocalPlayer.Character.Position);
+            if (Game.LocalPlayer.Character.Position.DistanceTo(Location.DrugDealerLocation[m_Location][0].Posistion) < 50)
+            {
+                Log("Distance check failed");
+                return false;
+            }
 
+            Log("Location id: " + m_Location);
+
+            Log("Adding small blip");
+            m_Blip = ResourceManager.CreatBlip(Location.HomlessLocations[m_Location][0].Posistion, 0.5f);
 
             Log("Clearing area of peds and cars");
 
             foreach (Vehicle v in World.GetAllVehicles())
             {
-                if (v.DistanceTo(m_DrugDealerLocations[m_CurrentLocations].Car.Vector3) < 10 && v.Exists() && v != Game.LocalPlayer.LastVehicle)
+                if (v.DistanceTo(Location.DrugDealerLocation[m_Location][0].Posistion) < 10 && v.Exists() && v != Game.LocalPlayer.LastVehicle)
                 {
                     v.Delete();
                 }
@@ -46,7 +51,7 @@ namespace EpicEvents.Events
 
             foreach (Ped p in World.GetAllPeds())
             {
-                if (p.DistanceTo(m_DrugDealerLocations[m_CurrentLocations].Car.Vector3) < 10 && p.Exists())
+                if (p.DistanceTo(Location.DrugDealerLocation[m_Location][0].Posistion) < 10 && p.Exists())
                 {
                     p.Delete();
                 }
@@ -54,49 +59,48 @@ namespace EpicEvents.Events
 
             Log("Spawning peds");
 
-            m_Peds = new Ped[]
+            LocationItem[] peditems = Location.GetPedsInArray(Location.DrugDealerLocation[m_Location]);
+
+            m_Peds = new Ped[peditems.Length];
+
+            for (int i = 0; i < peditems.Length; i++)
             {
-                ResourceManager.CreatePed(m_DrugDealerLocations[m_CurrentLocations].Criminal1.Vector3,m_DrugDealerLocations[m_CurrentLocations].Criminal1.Heading),
-                ResourceManager.CreatePed(m_DrugDealerLocations[m_CurrentLocations].Criminal2.Vector3,m_DrugDealerLocations[m_CurrentLocations].Criminal2.Heading),
-                ResourceManager.CreatePed(m_DrugDealerLocations[m_CurrentLocations].Buyer1.Vector3,m_DrugDealerLocations[m_CurrentLocations].Buyer1.Heading),
-                ResourceManager.CreatePed(m_DrugDealerLocations[m_CurrentLocations].Buyer2.Vector3,m_DrugDealerLocations[m_CurrentLocations].Buyer2.Heading)
-            };
+                m_Peds[i] = ResourceManager.CreatePed(Models.GetRandomHomless(), peditems[i].Posistion,
+                    peditems[i].Rotation.Z);
 
-            foreach (Ped p in m_Peds)
-            {
-                AnimationType anim;
-                anim = Animation.GetRandomIdleAnimation();
+                if (peditems[i].AnimName != "" && peditems[i].AnimDict != "")
+                {
+                    m_Peds[i].Tasks.PlayAnimation(peditems[i].AnimDict, peditems[i].AnimName, 1, AnimationFlags.Loop);
+                }
+                if (peditems[i].Frozen == true)
+                {
+                    m_Peds[i].IsPositionFrozen = true;
+                }
 
-                p.Tasks.PlayAnimation(anim.Dictionary, anim.Animation, 1, AnimationFlags.Loop);
-                p.Inventory.GiveNewWeapon(WeaponHash.Pistol, 50, false);
-            }
-
-            Log("Setting ped items and personas");
-
-            foreach (Ped p in m_Peds)
-            {
-                Wrapper.SetPedItems(p, SearchItems.GetRandomItemsRedPed());
+                m_Peds[i].Inventory.GiveNewWeapon(WeaponHash.Pistol, 50, false);
+                Wrapper.SetPedItems(m_Peds[i], SearchItems.GetRandomItemsRedPed());
             }
 
             Log("Spawning vehicles");
 
-            m_Vehicle = ResourceManager.CreateVehicle("Faction3", m_DrugDealerLocations[m_CurrentLocations].Car.Vector3, m_DrugDealerLocations[m_CurrentLocations].Car.Heading);
+            LocationItem[] vehicle = Location.GetVehiclesInArray(Location.DrugDealerLocation[m_Location]);
 
-            Log("Setting up vehicles");
+            m_Vehicles = new Vehicle[vehicle.Length];
 
-            m_Vehicle.IsEngineOn = true;
-
-            m_Vehicle.IsInteriorLightOn = true;
-            NativeFunction.Natives.SET_VEHICLE_LIGHTS(m_Vehicle, 2);
-
-            m_Vehicle.GetDoors()[0].Open(true);
-
-            Wrapper.SetVehicleItems(m_Vehicle, SearchItems.GetRandomItemsRedVehicles(), "", SearchItems.GetRandomItemsRedVehicles());
+            for (int i = 0; i < vehicle.Length; i++)
+            {
+                m_Vehicles[i] = ResourceManager.CreateVehicle(vehicle[i].Model, vehicle[i].Posistion, vehicle[i].Rotation.Z);
+                m_Vehicles[i].IsEngineOn = true;
+                m_Vehicles[i].IsInteriorLightOn = true;
+                NativeFunction.Natives.SET_VEHICLE_LIGHTS(m_Vehicles[i], 2);
+                m_Vehicles[i].GetDoors()[0].Open(true);
+                Wrapper.SetVehicleItems(m_Vehicles[i], SearchItems.GetRandomItemsRedVehicles(), "", SearchItems.GetRandomItemsRedVehicles());
+            }
 
             Log("Setting behaviour path");
 
             m_BehavPath = Random.Next(0, 3);
-  
+
             Log("Setting behaviour specific");
 
 
@@ -120,7 +124,7 @@ namespace EpicEvents.Events
 
                 default://Run on too close
 
-                    if (!m_InPursuit && Game.LocalPlayer.Character.DistanceTo(m_DrugDealerLocations[m_CurrentLocations].Criminal2.Vector3) < distance)
+                    if (!m_InPursuit && Game.LocalPlayer.Character.DistanceTo(Location.DrugDealerLocation[m_Location][0].Posistion) < distance)
                     {
                         m_InPursuit = true;
                         m_Pursuit = Functions.CreatePursuit();
@@ -140,7 +144,7 @@ namespace EpicEvents.Events
                     break;
                 case 1://Run and shoot
 
-                    if (!m_InPursuit && Game.LocalPlayer.Character.DistanceTo(m_DrugDealerLocations[m_CurrentLocations].Criminal2.Vector3) < distance)
+                    if (!m_InPursuit && Game.LocalPlayer.Character.DistanceTo(Location.DrugDealerLocation[m_Location][0].Posistion) < distance)
                     {
                         m_Pursuit = Functions.CreatePursuit();
 
@@ -181,8 +185,6 @@ namespace EpicEvents.Events
 
         public override void End()
         {
-            base.End();
-
             Log("Cleaning up");
 
             foreach (Ped p in m_Peds)
@@ -190,29 +192,20 @@ namespace EpicEvents.Events
                 ResourceManager.RemovePed(p);
             }
 
-            ResourceManager.RemoveVehicle(m_Vehicle);
+            m_Peds = null;
+
+            foreach (Vehicle v in m_Vehicles)
+            {
+                ResourceManager.RemoveVehicle(v);
+            }
+
+            m_Vehicles = null;
+
+            ResourceManager.RemoveBlip(m_Blip);
+            m_Blip = null;
 
             Log("Cleaned up correctly, ending event.");
-        }
-    }
-
-    public struct DrugDealerLocation
-    {
-        public EVector3 Car;
-
-        public EVector3 Criminal1;
-        public EVector3 Criminal2;
-
-        public EVector3 Buyer1;
-        public EVector3 Buyer2;
-
-        public DrugDealerLocation(EVector3 car, EVector3 criminal1, EVector3 criminal2, EVector3 buyer1, EVector3 buyer2)
-        {
-            Car = car;
-            Criminal1 = criminal1;
-            Criminal2 = criminal2;
-            Buyer1 = buyer1;
-            Buyer2 = buyer2;
+            base.End();
         }
     }
 }

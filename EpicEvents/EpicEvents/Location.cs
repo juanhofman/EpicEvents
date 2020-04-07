@@ -189,6 +189,49 @@ namespace EpicEvents
                 new LocationItem(1133.88354f, -3127.82861f, 6.80883121f, -0f, 0f, 29.2947865f, "amb@world_human_bum_slumped@male@laying_on_right_side@idle_a", "idle_b", false, 0x4705974a, (ObjectType)1)
             }
         };
+
+        public static LocationItem[][] DrugDealerLocation = new LocationItem[6][]
+        {
+            new LocationItem[]
+            {
+                new LocationItem(-550.260315f, 302.303528f, 82.612442f, -1.26564944f, 1.57898355f, 94.6226959f, "", "", false, 0x14d69010, (ObjectType)2),
+                new LocationItem(-550.250916f, 305.825134f, 82.6819153f, 0.374282807f, -2.83794856f, -95.4159241f, "", "", false, 0x14d69010, (ObjectType)2),
+                new LocationItem(-553.417297f, 305.201294f, 83.3122864f, 2.54444361e-14f, 5.33600485e-07f, -47.2303886f, "amb@world_human_drug_dealer_hard@male@idle_b", "idle_d", false, 0xe497bbef, (ObjectType)1),
+                new LocationItem(-554.098938f, 306.211548f, 83.2979126f, -0f, 0f, -56.0966759f, "amb@world_human_drug_dealer_hard@male@idle_a", "idle_b", false, 0xe497bbef, (ObjectType)1),
+                new LocationItem(-543.966003f, 310.606781f, 83.0157318f, -0f, 0f, -90.7217484f, "timetable@gardener@smoking_joint", "idle_cough", false, 0xe497bbef, (ObjectType)1),
+                new LocationItem(-553.25177f, 306.96286f, 83.2642517f, -0f, 0f, 163.330093f, "amb@world_human_drug_dealer_hard@male@idle_a", "idle_a", false, 0xe497bbef, (ObjectType)1)
+            },
+            new LocationItem[]
+            {
+                new LocationItem(127.733292f, -418.739441f, 40.5363045f, -0.000672326074f, -0.00645108894f, 67.0974655f, "", "", false, 0x1f3766e3, (ObjectType)2),
+                new LocationItem(129.433487f, -414.790161f, 40.4948006f, -0.00210483302f, -0.0466712341f, -137.168976f, "", "", false, 0xca62927a, (ObjectType)2),
+                new LocationItem(130.571945f, -420.844269f, 41.0621986f, -0f, 0f, -8.63303661f, "amb@world_human_drug_dealer_hard@male@idle_b", "idle_d", false, 0xe497bbef, (ObjectType)1),
+                new LocationItem(131.144165f, -419.262177f, 41.0702209f, -0f, 0f, 162.342407f, "amb@world_human_drug_dealer_hard@male@idle_a", "idle_c", false, 0xe497bbef, (ObjectType)1)
+            },
+            new LocationItem[]
+            {
+                new LocationItem(-1277.05615f, -1087.25732f, 6.9212594f, -2.03674674f, -0.804251432f, 29.8162327f, "", "", false, 0x95466bdb, (ObjectType)2),
+                new LocationItem(-1276.47925f, -1085.27417f, 7.59176683f, 0f, 0f, 48.5364418f, "amb@world_human_drug_dealer_hard@male@idle_a", "idle_a", false, 0xe497bbef, (ObjectType)1)
+            },
+            new LocationItem[]
+            {
+                new LocationItem(-943.176086f, -2081.27295f, 8.75052071f, 0.000130665707f, 0.0121497149f, 43.0176697f, "", "", false, 0xe9805550, (ObjectType)2),
+                new LocationItem(-942.275757f, -2084.06079f, 9.29911518f, -0f, 0f, -28.1123562f, "amb@world_human_drug_dealer_hard@male@idle_a", "idle_a", false, 0xe497bbef, (ObjectType)1),
+                new LocationItem(-940.8974f, -2081.95728f, 9.29902554f, -0f, 0f, 156.580429f, "amb@world_human_drug_dealer_hard@male@idle_b", "idle_d", false, 0xe497bbef, (ObjectType)1)
+            },
+            new LocationItem[]
+            {
+                new LocationItem(86.8202896f, -1250.60583f, 28.7915745f, 0.000115974886f, -0.0692671984f, 97.3034134f, "", "", false, 0x9b909c94, (ObjectType)2),
+                new LocationItem(88.5265427f, -1252.05139f, 29.316164f, -0f, -6.19121602e-06f, 60.5782547f, "amb@world_human_drug_dealer_hard@male@idle_a", "idle_c", false, 0xe497bbef, (ObjectType)1),
+                new LocationItem(87.1566696f, -1252.27222f, 29.318224f, 0f, 0f, -47.4291229f, "amb@world_human_drug_dealer_hard@male@idle_a", "idle_a", false, 0xe497bbef, (ObjectType)1)
+            },
+            new LocationItem[]
+            {
+                new LocationItem(276.558136f, -2628.77881f, 5.56053543f, 0.1949175f, -0.653557539f, -160.123566f, "", "", false, 0x9b909c94, (ObjectType)2),
+                new LocationItem(278.248535f, -2631.22949f, 6.06302929f, -0f, 0f, 119.237434f, "amb@world_human_drug_dealer_hard@male@idle_b", "idle_d", false, 0xe497bbef, (ObjectType)1),
+                new LocationItem(276.743744f, -2631.83594f, 6.05718756f, -0f, 0f, -77.2895355f, "amb@world_human_drug_dealer_hard@male@idle_a", "idle_a", false, 0xe497bbef, (ObjectType)1)
+            }
+        };
     }
 
 

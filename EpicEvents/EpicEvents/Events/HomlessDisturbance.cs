@@ -21,6 +21,8 @@ namespace EpicEvents.Events
 
         private Vehicle[] m_Vehicles;
 
+        private Blip m_Blip;
+
         private bool m_InPursuit = false;
         private LHandle m_Pursuit;
         int m_Distance = 30;
@@ -33,9 +35,16 @@ namespace EpicEvents.Events
 
             m_Location = Location.GetClosestLocationInArray(Location.HomlessLocations, Game.LocalPlayer.Character.Position);
             if (Game.LocalPlayer.Character.Position.DistanceTo(Location.HomlessLocations[m_Location][0].Posistion) < 50)
+            {
+                Log("Distance check failed");
                 return false;
+            }
 
             Log("Location id: " + m_Location);
+
+            Log("Adding small blip");
+            m_Blip = ResourceManager.CreatBlip(Location.HomlessLocations[m_Location][0].Posistion, 0.75f);
+            m_Blip.Color = System.Drawing.Color.Yellow;
 
             Log("Clearing area of peds and cars");
 
@@ -148,6 +157,9 @@ namespace EpicEvents.Events
                 }
             }
 
+            if (Game.LocalPlayer.Character.Position.DistanceTo(Location.HomlessLocations[m_Location][0].Posistion) > 100)
+                End();
+
             switch (m_BehavPath)
             {
                 default://Run
@@ -208,8 +220,6 @@ namespace EpicEvents.Events
 
         public override void End()
         {
-            base.End();
-
             foreach (Ped p in m_Peds)
             {
                 ResourceManager.RemovePed(p);
@@ -223,30 +233,11 @@ namespace EpicEvents.Events
             }
 
             m_Vehicles = null;
-        }
-    }
 
-    public struct HomlessDisturbanceLocations
-    {
-        public EVector3 Car1;
-        public EVector3 Car2;
+            ResourceManager.RemoveBlip(m_Blip);
+            m_Blip = null;
 
-        public List<EVector3> Bums;
-
-        public List<EVector3> Bottles;
-        public EVector3 ProtestSign;
-        public EVector3 Trolly1;
-        public EVector3 Trolly2;
-
-        public HomlessDisturbanceLocations(EVector3 car1, EVector3 car2, List<EVector3> bums, List<EVector3> bottles, EVector3 protestSign, EVector3 trolly1, EVector3 trolly2)
-        {
-            Car1 = car1;
-            Car2 = car2;
-            Bums = bums;
-            Bottles = bottles;
-            ProtestSign = protestSign;
-            Trolly1 = trolly1;
-            Trolly2 = trolly2;
+            base.End();
         }
     }
 }
