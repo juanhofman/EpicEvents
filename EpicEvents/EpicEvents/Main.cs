@@ -15,6 +15,7 @@ namespace EpicEvents
     {
         public static EventController EventController;
         public static ResourceManager ResourceManager;
+        public static Settings Settings;
         public static Random Random;
 
         public override void Initialize()
@@ -22,11 +23,14 @@ namespace EpicEvents
             Game.LogTrivial("[EE] Initializing.");
 
             Random = new Random();
+            Settings = new Settings();
+
             EventController = new EventController();
             ResourceManager = new ResourceManager();
 
             EventController.RegisterEvent(typeof(Events.DrugDealer));
             EventController.RegisterEvent(typeof(Events.HomlessDisturbance));
+            EventController.RegisterEvent(typeof(Events.Shooting));
 
             Functions.OnOnDutyStateChanged += StartEvents;
 

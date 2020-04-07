@@ -1,0 +1,33 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<EpicEvents>
+  <GlobalSettings>
+    <!--The minimum time between any event (Round number)-->
+    <MinTimeBetweenEvents>100</MinTimeBetweenEvents>
+    <!--The maximum time between any event (Round number)-->
+    <MaxTimeBetweenEvents>400</MaxTimeBetweenEvents>
+    <!--Will events spawn in details like carts, bottles , etc. (true, false)  CURRENTLY DOES NOT AFFECT ANYTHING-->
+    <EnableDetailSpawning>false</EnableDetailSpawning>
+    <!--Send usage data, this is to improve the plugin and detect problems. No personal data will be sent.-->
+    <SendData>true</SendData>
+  </GlobalSettings>
+  <DrugDealerSettings>
+    <!--Enable the event (true, false)-->
+    <EventEnabled>true</EventEnabled>
+    <!--The chance that an event will be chosen of this type (round number)-->
+    <EventProbability>1</EventProbability>
+  </DrugDealerSettings>
+  <HomelessSettings>
+    <!--Enable the event (true, false)-->
+    <EventEnabled>true</EventEnabled>
+    <!--The chance that an event will be chosen of this type (round number)-->
+    <EventProbability>1</EventProbability>
+  </HomelessSettings>
+  <ShootingSettings>
+    <!--Enable the event (true, false)-->
+    <EventEnabled>true</EventEnabled>
+    <!--The chance that an event will be chosen of this type (round number)-->
+    <EventProbability>1</EventProbability>
+    <!--Minimal time a ped needs to wander before the event will start, this is needed to prevent ped standing on the middle of the road-->
+    <MinWanderTime>60</MinWanderTime>
+  </ShootingSettings>
+</EpicEvents>

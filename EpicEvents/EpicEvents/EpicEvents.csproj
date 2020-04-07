@@ -59,6 +59,7 @@
   <ItemGroup>
     <Compile Include="API\Animation.cs" />
     <Compile Include="API\Models.cs" />
+    <Compile Include="API\Settings.cs" />
     <Compile Include="EVector3.cs" />
     <Compile Include="API\EventController.cs" />
     <Compile Include="Event.cs" />
@@ -72,6 +73,9 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="API\ResourceManager.cs" />
     <Compile Include="API\SearchItems.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="API\EpicEvents.xml" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>

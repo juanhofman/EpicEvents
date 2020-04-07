@@ -46,6 +46,35 @@ namespace EpicEvents
             }
         }
 
+        public void SetSpecificEvent(Type type)
+        {
+            if(m_ActiveEvent == null)
+            {
+                Event e = (Event)Activator.CreateInstance(type);
+                bool ev = e.Start();
+                if (ev)
+                {
+                    m_ActiveEvent = e;
+                }
+            }
+            else if(m_ActiveEvent.GetType() != typeof(Type))
+            {
+                m_ActiveEvent.End();
+
+                Event e = (Event)Activator.CreateInstance(type);
+                bool ev = e.Start();
+                if (ev)
+                {
+                    m_ActiveEvent = e;
+                }
+            }
+            else
+            {
+                m_ActiveEvent.End();
+                m_ActiveEvent = null;
+            }
+        }
+
         public void EndOfEvent()
         {
             m_ActiveEvent = null;
@@ -75,6 +104,16 @@ namespace EpicEvents
                 Game.LogTrivial("[EE] EvenController Starting thread #2.");
                 while (m_Looping)
                 {
+                    if (Game.IsKeyDown(Keys.F7) && !Game.IsAltKeyDownRightNow)
+                    {
+                        SetSpecificEvent(typeof(Events.Shooting));
+                    }
+
+                    if(Game.IsKeyDown(Keys.F7) && Game.IsAltKeyDownRightNow)
+                    {
+                        Main.ResourceManager.RemoveAll();
+                    }
+
                     if (m_ActiveEvent == null)
                     {
                         if (!m_Generating)

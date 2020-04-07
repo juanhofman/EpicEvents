@@ -90,6 +90,10 @@ namespace EpicEvents
 
             return index;
         }
+        public static Vector3 GetNextPosistionOnSidewalk(Vector3 around, float min, float max)
+        {
+            return new Vector3();
+        }
 
 
         public static LocationItem[][] HomlessLocations = new LocationItem[9][]
@@ -231,6 +235,11 @@ namespace EpicEvents
                 new LocationItem(278.248535f, -2631.22949f, 6.06302929f, -0f, 0f, 119.237434f, "amb@world_human_drug_dealer_hard@male@idle_b", "idle_d", false, 0xe497bbef, (ObjectType)1),
                 new LocationItem(276.743744f, -2631.83594f, 6.05718756f, -0f, 0f, -77.2895355f, "amb@world_human_drug_dealer_hard@male@idle_a", "idle_a", false, 0xe497bbef, (ObjectType)1)
             }
+        };
+
+        private static LocationItem[] m_SidewalkPosistions = new LocationItem[]
+        {
+
         };
     }
 
