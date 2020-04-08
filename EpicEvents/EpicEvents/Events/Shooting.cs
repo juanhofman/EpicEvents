@@ -35,64 +35,194 @@ namespace EpicEvents.Events
 
         public override bool Start()
         {
-            Log("Finding posistion");
-            m_EventPos = World.GetNextPositionOnStreet(Game.LocalPlayer.Character.Position.Around(Random.Next(m_MinDistance, m_MaxDistnace)));
-
-            Log("Spawning peds");
-            m_Peds = new Ped[Random.Next(m_MinPeds, m_MaxPeds + 1)];
-
-            for (int i = 0; i < m_Peds.Length; i++)
+            try
             {
-                m_Peds[i] = ResourceManager.CreatePed(m_EventPos);
+                Log("Finding posistion");
+                m_EventPos = World.GetNextPositionOnStreet(Game.LocalPlayer.Character.Position.Around(Random.Next(m_MinDistance, m_MaxDistnace)));
 
-                if (i == 0)
-                    m_Peds[i].Tasks.Wander();
-                else
-                    m_Peds[i].Tasks.FollowToOffsetFromEntity(m_Peds[0], Vector3.RelativeBack * Random.Next(2, 15));
+                Log("Spawning peds");
+                m_Peds = new Ped[Random.Next(m_MinPeds, m_MaxPeds + 1)];
+
+                for (int i = 0; i < m_Peds.Length; i++)
+                {
+                    m_Peds[i] = ResourceManager.CreatePed(m_EventPos);
+
+                    if (i == 0)
+                        m_Peds[i].Tasks.Wander();
+                    else
+                        m_Peds[i].Tasks.FollowToOffsetFromEntity(m_Peds[0], Vector3.RelativeBack * Random.Next(2, 15));
+                }
+
+                m_Blip = ResourceManager.CreatBlip(m_Peds[0].Position.Around(10), 120.0f);
+                m_Blip.Alpha = 0.5f;
+                m_Blip.Color = System.Drawing.Color.Yellow;
+
+                Log("Time: " + Settings.ShootingWanderTime.ToString());
+
+                m_BehavPath = Random.Next(0, 3);
+
+                if (Settings.DispatchNotify)
+                {
+                    Log("Notify player");
+                    Game.DisplayNotification("Dispatch: we have had multiple calls about suspicious activity, the area is marked on your map");
+                }
+
+                return true;
             }
-
-            m_Blip = ResourceManager.CreatBlip(m_Peds[0].Position.Around(10), 120.0f);
-            m_Blip.Alpha = 0.5f;
-            m_Blip.Color = System.Drawing.Color.Yellow;
-
-            Log("Time: " + Settings.ShootingWanderTime.ToString());
-
-            return true;
+            catch (Exception e)
+            {
+                Game.LogTrivial("[ee] ERROR: " + e);
+                Game.DisplayNotification("Epic events encounterd an error, please file a bug report with your ragepluginhook.log");
+                End();
+                return false;
+            }
         }
 
 
         public override void Update()
         {
-            switch (m_BehavPath)
+            try
             {
-                default://Shoot each other and run
-                    #region default
-                    if (!m_HasEventStarted)
-                    {
-                        m_TimeBeforeEventTimer += Game.FrameTime;
-                    }
 
-                    if (m_TimeBeforeEventTimer >= Settings.ShootingWanderTime && !m_HasEventStarted)//Stop wander start shoot
-                    {
-                        m_HasEventStarted = true;
-
-                        ResourceManager.RemoveBlip(m_Blip);
-                        m_Blip = ResourceManager.CreatBlip(m_Peds[0].Position.Around(2), 20.0f);
-                        m_Blip.Alpha = 0.5f;
-                        m_Blip.Color = System.Drawing.Color.Yellow;
-
-                        for (int i = 0; i < m_Peds.Length; i++)
+                switch (m_BehavPath)
+                {
+                    default://Shoot each other and run
+                        #region default
+                        if (!m_HasEventStarted)
                         {
-                            m_Peds[i].Inventory.GiveNewWeapon(WeaponHash.Pistol, 500, true);
-                            if (i == 0)
-                                m_Peds[i].Tasks.FireWeaponAt(m_Peds[1], Random.Next(5000, 10000), FiringPattern.BurstFire);
-                            else
-                                m_Peds[i].Tasks.FireWeaponAt(m_Peds[0], Random.Next(5000, 10000), FiringPattern.BurstFire);
+                            m_TimeBeforeEventTimer += Game.FrameTime;
                         }
 
-                        GameFiber.StartNew(delegate
+                        if (m_TimeBeforeEventTimer >= Settings.ShootingWanderTime && !m_HasEventStarted)//Stop wander start shoot
                         {
-                            GameFiber.Sleep(15000);
+                            m_HasEventStarted = true;
+
+                            ResourceManager.RemoveBlip(m_Blip);
+                            m_Blip = ResourceManager.CreatBlip(m_Peds[0].Position.Around(2), 20.0f);
+                            m_Blip.Alpha = 0.5f;
+                            m_Blip.Color = System.Drawing.Color.Yellow;
+
+                            for (int i = 0; i < m_Peds.Length; i++)
+                            {
+                                m_Peds[i].Inventory.GiveNewWeapon(WeaponHash.Pistol, 500, true);
+                                if (i == 0)
+                                    m_Peds[i].Tasks.FireWeaponAt(m_Peds[1], Random.Next(5000, 10000), FiringPattern.BurstFire);
+                                else
+                                    m_Peds[i].Tasks.FireWeaponAt(m_Peds[0], Random.Next(5000, 10000), FiringPattern.BurstFire);
+                            }
+
+                            GameFiber.StartNew(delegate
+                            {
+                                GameFiber.Sleep(15000);
+                                m_Pursuit = Functions.CreatePursuit();
+
+                                foreach (Ped p in m_Peds)
+                                {
+                                    if (p.Exists())
+                                    {
+                                        Functions.AddPedToPursuit(m_Pursuit, p);
+                                        PedPursuitAttributes attri = Functions.GetPedPursuitAttributes(p);
+                                        attri.HandlingAbility = (float)Random.NextDouble() + 0.5f;
+                                    }
+                                }
+
+                                Functions.SetPursuitCopsCanJoin(m_Pursuit, true);
+                                Functions.SetPursuitTacticsEnabled(m_Pursuit, true);
+                                Functions.SetPursuitIsActiveForPlayer(m_Pursuit, true);
+                                GameFiber.Hibernate();
+                            });
+                        }
+
+                        if (m_HasEventStarted)
+                        {
+                            m_TimeoutTimer += Game.FrameTime;
+                            if (m_TimeoutTimer >= m_TimeoutTime && Game.LocalPlayer.Character.DistanceTo(m_Peds[0].Position) > 50 && AllPedsDead())
+                            {
+                                End();
+                            }
+                        }
+
+                        break;
+                    #endregion
+
+                    case 1://Shoot at cop and run
+                        #region 1
+                        if (!m_HasEventStarted)
+                        {
+                            m_TimeBeforeEventTimer += Game.FrameTime;
+                        }
+
+                        if (m_TimeBeforeEventTimer >= Settings.ShootingWanderTime && !m_HasEventStarted)//Stop wander start shoot
+                        {
+                            m_HasEventStarted = true;
+
+                            ResourceManager.RemoveBlip(m_Blip);
+                            m_Blip = ResourceManager.CreatBlip(m_Peds[0].Position.Around(2), 20.0f);
+                            m_Blip.Alpha = 0.5f;
+                            m_Blip.Color = System.Drawing.Color.Yellow;
+
+                            for (int i = 0; i < m_Peds.Length; i++)
+                            {
+                                m_Peds[i].Inventory.GiveNewWeapon(WeaponHash.Pistol, 12, true);
+                                m_Peds[i].Tasks.FireWeaponAt(Game.LocalPlayer.Character, Random.Next(5000, 10000), FiringPattern.BurstFirePistol);
+
+                            }
+
+                            GameFiber.StartNew(delegate
+                            {
+                                GameFiber.Sleep(15000);
+                                m_Pursuit = Functions.CreatePursuit();
+
+                                foreach (Ped p in m_Peds)
+                                {
+                                    if (p.Exists())
+                                    {
+                                        Functions.AddPedToPursuit(m_Pursuit, p);
+                                        PedPursuitAttributes attri = Functions.GetPedPursuitAttributes(p);
+                                        attri.HandlingAbility = (float)Random.NextDouble() + 0.5f;
+                                    }
+                                }
+
+                                Functions.SetPursuitCopsCanJoin(m_Pursuit, true);
+                                Functions.SetPursuitTacticsEnabled(m_Pursuit, true);
+                                Functions.SetPursuitIsActiveForPlayer(m_Pursuit, true);
+                                GameFiber.Hibernate();
+                            });
+                        }
+
+                        if (m_HasEventStarted)
+                        {
+                            m_TimeoutTimer += Game.FrameTime;
+                            if (m_TimeoutTimer >= m_TimeoutTime && Game.LocalPlayer.Character.DistanceTo(m_Peds[0].Position) > 50 && AllPedsDead())
+                            {
+                                End();
+                            }
+                        }
+                        #endregion
+                        break;
+
+                    case 2://Run
+                        #region 2
+                        if (!m_HasEventStarted)
+                        {
+                            m_TimeBeforeEventTimer += Game.FrameTime;
+                        }
+
+                        if (m_TimeBeforeEventTimer >= Settings.ShootingWanderTime && !m_HasEventStarted &&
+                            Game.LocalPlayer.Character.DistanceTo(m_Peds[0].Position) < 50)//Stop wander start shoot
+                        {
+                            m_HasEventStarted = true;
+
+                            ResourceManager.RemoveBlip(m_Blip);
+                            m_Blip = ResourceManager.CreatBlip(m_Peds[0].Position.Around(2), 20.0f);
+                            m_Blip.Alpha = 0.5f;
+                            m_Blip.Color = System.Drawing.Color.Yellow;
+
+                            for (int i = 0; i < m_Peds.Length; i++)
+                            {
+                                m_Peds[i].Inventory.GiveNewWeapon(WeaponHash.AssaultRifle, 12, true);
+                            }
+
                             m_Pursuit = Functions.CreatePursuit();
 
                             foreach (Ped p in m_Peds)
@@ -109,131 +239,29 @@ namespace EpicEvents.Events
                             Functions.SetPursuitTacticsEnabled(m_Pursuit, true);
                             Functions.SetPursuitIsActiveForPlayer(m_Pursuit, true);
                             GameFiber.Hibernate();
-                        });
-                    }
-
-                    if (m_HasEventStarted)
-                    {
-                        m_TimeoutTimer += Game.FrameTime;
-                        if (m_TimeoutTimer >= m_TimeoutTime && Game.LocalPlayer.Character.DistanceTo(m_Peds[0].Position) > 50 && AllPedsDead())
-                        {
-                            End();
-                        }
-                    }
-
-                    break;
-                #endregion
-
-                case 1://Shoot at cop and run
-                    #region 1
-                    if (!m_HasEventStarted)
-                    {
-                        m_TimeBeforeEventTimer += Game.FrameTime;
-                    }
-
-                    if (m_TimeBeforeEventTimer >= Settings.ShootingWanderTime && !m_HasEventStarted)//Stop wander start shoot
-                    {
-                        m_HasEventStarted = true;
-
-                        ResourceManager.RemoveBlip(m_Blip);
-                        m_Blip = ResourceManager.CreatBlip(m_Peds[0].Position.Around(2), 20.0f);
-                        m_Blip.Alpha = 0.5f;
-                        m_Blip.Color = System.Drawing.Color.Yellow;
-
-                        for (int i = 0; i < m_Peds.Length; i++)
-                        {
-                            m_Peds[i].Inventory.GiveNewWeapon(WeaponHash.Pistol, 12, true);
-                            m_Peds[i].Tasks.FireWeaponAt(Game.LocalPlayer.Character, Random.Next(5000, 10000), FiringPattern.BurstFirePistol);
-
                         }
 
-                        GameFiber.StartNew(delegate
+                        if (m_HasEventStarted)
                         {
-                            GameFiber.Sleep(15000);
-                            m_Pursuit = Functions.CreatePursuit();
-
-                            foreach (Ped p in m_Peds)
+                            m_TimeoutTimer += Game.FrameTime;
+                            if (m_TimeoutTimer >= m_TimeoutTime && Game.LocalPlayer.Character.DistanceTo(m_Peds[0].Position) > 50 && AllPedsDead())
                             {
-                                if (p.Exists())
-                                {
-                                    Functions.AddPedToPursuit(m_Pursuit, p);
-                                    PedPursuitAttributes attri = Functions.GetPedPursuitAttributes(p);
-                                    attri.HandlingAbility = (float)Random.NextDouble() + 0.5f;
-                                }
-                            }
-
-                            Functions.SetPursuitCopsCanJoin(m_Pursuit, true);
-                            Functions.SetPursuitTacticsEnabled(m_Pursuit, true);
-                            Functions.SetPursuitIsActiveForPlayer(m_Pursuit, true);
-                            GameFiber.Hibernate();
-                        });
-                    }
-
-                    if (m_HasEventStarted)
-                    {
-                        m_TimeoutTimer += Game.FrameTime;
-                        if (m_TimeoutTimer >= m_TimeoutTime && Game.LocalPlayer.Character.DistanceTo(m_Peds[0].Position) > 50 && AllPedsDead())
-                        {
-                            End();
-                        }
-                    }
-                    #endregion
-                    break;
-
-                case 2://Run
-                    #region 2
-                    if (!m_HasEventStarted)
-                    {
-                        m_TimeBeforeEventTimer += Game.FrameTime;
-                    }
-
-                    if (m_TimeBeforeEventTimer >= Settings.ShootingWanderTime && !m_HasEventStarted && 
-                        Game.LocalPlayer.Character.DistanceTo(m_Peds[0].Position) < 50)//Stop wander start shoot
-                    {
-                        m_HasEventStarted = true;
-
-                        ResourceManager.RemoveBlip(m_Blip);
-                        m_Blip = ResourceManager.CreatBlip(m_Peds[0].Position.Around(2), 20.0f);
-                        m_Blip.Alpha = 0.5f;
-                        m_Blip.Color = System.Drawing.Color.Yellow;
-
-                        for (int i = 0; i < m_Peds.Length; i++)
-                        {
-                            m_Peds[i].Inventory.GiveNewWeapon(WeaponHash.AssaultRifle, 12, true);
-                        }
-
-                        m_Pursuit = Functions.CreatePursuit();
-
-                        foreach (Ped p in m_Peds)
-                        {
-                            if (p.Exists())
-                            {
-                                Functions.AddPedToPursuit(m_Pursuit, p);
-                                PedPursuitAttributes attri = Functions.GetPedPursuitAttributes(p);
-                                attri.HandlingAbility = (float)Random.NextDouble() + 0.5f;
+                                End();
                             }
                         }
+                        #endregion
+                        break;
+                }
 
-                        Functions.SetPursuitCopsCanJoin(m_Pursuit, true);
-                        Functions.SetPursuitTacticsEnabled(m_Pursuit, true);
-                        Functions.SetPursuitIsActiveForPlayer(m_Pursuit, true);
-                        GameFiber.Hibernate();
-                    }
-
-                    if (m_HasEventStarted)
-                    {
-                        m_TimeoutTimer += Game.FrameTime;
-                        if (m_TimeoutTimer >= m_TimeoutTime && Game.LocalPlayer.Character.DistanceTo(m_Peds[0].Position) > 50 && AllPedsDead())
-                        {
-                            End();
-                        }
-                    }
-                    #endregion
-                    break;
+                if (Game.LocalPlayer.Character.DistanceTo(m_Peds[0]) > 400)
+                    End();
             }
-
-            if (Game.LocalPlayer.Character.DistanceTo(m_Peds[0]) > 400)
+            catch (Exception e)
+            {
+                Game.LogTrivial("[ee] ERROR: " + e);
+                Game.DisplayNotification("Epic events encounterd an error, please file a bug report with your ragepluginhook.log");
                 End();
+            }
         }
 
         private bool AllPedsDead()
@@ -241,8 +269,9 @@ namespace EpicEvents.Events
             bool state = false;
             foreach (Ped p in m_Peds)
             {
-                if (p.IsDead)
-                    state = true;
+                if (p.Exists())
+                    if (p.IsDead)
+                        state = true;
             }
             return state;
         }

@@ -7,8 +7,8 @@
     <MaxTimeBetweenEvents>400</MaxTimeBetweenEvents>
     <!--Will events spawn in details like carts, bottles , etc. (true, false)  CURRENTLY DOES NOT AFFECT ANYTHING-->
     <EnableDetailSpawning>false</EnableDetailSpawning>
-    <!--Send usage data, this is to improve the plugin and detect problems. No personal data will be sent.-->
-    <SendData>true</SendData>
+    <!--Get a message from dispatch to search an area(true,false) a yellow blip will always be visible in the area-->
+    <DispatchMessage>true</DispatchMessage>
   </GlobalSettings>
   <DrugDealerSettings>
     <!--Enable the event (true, false)-->

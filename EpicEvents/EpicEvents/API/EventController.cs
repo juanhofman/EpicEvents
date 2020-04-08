@@ -19,6 +19,10 @@ namespace EpicEvents
         {
             Game.LogTrivial("[EE] EventController Initializing.");
             m_Events = new List<Type>();
+
+            m_MinTimeBetween = Settings.MinTimeBetweenEvents;
+            m_MaxTimeBetween = Settings.MaxTimeBetweenEvents;
+
             Game.LogTrivial("[EE] EventController Initialized.");
         }
 

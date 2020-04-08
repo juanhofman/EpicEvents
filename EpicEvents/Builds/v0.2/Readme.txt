@@ -23,9 +23,8 @@ Current events:
 
 ---
 
-Copyright (C) 2020 Juan hofman All rights reserved. 
-No part of this publication may be reproduced, distributed, or transmitted in any form or by any means. 
-Only exception is with explicit permission.
+This work is licensed under the Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International License. 
+To view a copy of this license, visit http://creativecommons.org/licenses/by-nc-sa/4.0/.
 
 ---
 

@@ -25,6 +25,7 @@ namespace EpicEvents
 
         public static bool SpawnDetails = false;
         public static bool SendData = true;
+        public static bool DispatchNotify = true;
 
         enum EventSettings { DrugDealer, Homeless, Shooting};
 
@@ -45,6 +46,11 @@ namespace EpicEvents
                         {
                             switch (reader.Name)
                             {
+                                case "DispatchMessage":
+                                    Game.LogTrivial("[EE] Setting dispatch.");
+                                    DispatchNotify = bool.Parse(reader.ReadInnerXml());
+                                    break;
+
                                 case "MinTimeBetweenEvents":
                                     Game.LogTrivial("[EE] Setting minimal time between events.");
                                     MinTimeBetweenEvents = int.Parse(reader.ReadInnerXml());
@@ -124,7 +130,7 @@ namespace EpicEvents
             }
             catch (Exception e)
             {
-                Game.DisplayNotification("EpicEvents: " + e + " assigning default values.");
+                Game.DisplayNotification("EpicEvents: " + e + " assigning default settings.");
                 Game.LogTrivial(e.ToString());
             }
         }

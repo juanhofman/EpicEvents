@@ -20,7 +20,8 @@ namespace EpicEvents
 
         public override void Initialize()
         {
-            Game.LogTrivial("[EE] Initializing.");
+            Game.LogTrivial("[EE] Initializing. version:  0.2.0");
+            Game.DisplayNotification("Epic events: version 0.2.0");
 
             Random = new Random();
             Settings = new Settings();
@@ -28,10 +29,29 @@ namespace EpicEvents
             EventController = new EventController();
             ResourceManager = new ResourceManager();
 
-            EventController.RegisterEvent(typeof(Events.DrugDealer));
-            EventController.RegisterEvent(typeof(Events.HomlessDisturbance));
-            EventController.RegisterEvent(typeof(Events.Shooting));
+            if (Settings.DrugDealerEventEnabled)
+            {
+                for (int i = 0; i < Settings.DrugDealerEventProbability; i++)
+                {
+                    EventController.RegisterEvent(typeof(Events.DrugDealer));
+                }
+            }
 
+            if (Settings.HomelessEventEnabled)
+            {
+                for (int i = 0; i < Settings.HomelessEventProbability; i++)
+                {
+                    EventController.RegisterEvent(typeof(Events.HomlessDisturbance));
+                }
+            }
+
+            if(Settings.ShootingEventEnabled)
+            {
+                for (int i = 0; i < Settings.ShootingEventProbability; i++)
+                {
+                    EventController.RegisterEvent(typeof(Events.Shooting));
+                }
+            }
             Functions.OnOnDutyStateChanged += StartEvents;
 
             Game.LogTrivial("[EE] Initialized.");
@@ -55,6 +75,10 @@ namespace EpicEvents
                 Game.LogTrivial("[EE] Starting events.");
                 EventController.StartEvents();
                 Game.LogTrivial("[EE] Started events.");
+            }
+            else
+            {
+                EventController.StopEvents();
             }
         }
 
